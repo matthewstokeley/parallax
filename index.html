@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        
+        <!-- meta tags -->
+        <!-- encoding -->
+        <meta http-equiv="content-type" content="text/html"/>
+        <meta charset="utf-8"/>
+
+        <!-- reset viewport for mobile -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        
+        <!-- caching - default is no cache-->
+        <meta http-equiv="Expires" content="Tue, 01 Jan 1995 12:12:12 GMT"/>
+        <meta http-equiv="PRAGMA" content="NO-CACHE"/>
+        <meta http-equiv="CACHE-CONTROL" content="NO-CACHE"/>
+
+        <!-- description -->
+        <meta name="description" content="..."/>
+
+        <!-- title -->
+        <title>
+        parallax
+        </title>
+
+        <!-- favicon -->
+
+        <!-- styles -->
+        <!-- <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,700' rel='stylesheet' type='text/css'></link> -->
+        <style>
+            html {
+                background: #fafafa;
+                font-family: sans-serif;
+            }
+
+            body {
+                min-height: 150vh;
+            }
+
+            .block {
+                width: 30rem;
+                height: 10rem;
+                border: 0.5rem solid #5a5a5a;
+                margin-top: 15rem;
+                margin-left: 35rem;
+            }
+
+            .block__2 {
+                margin-left: 17rem;
+            }
+
+            .block__parallax {
+                position: absolute;
+            }
+
+        </style>
+    </head>
+
+    <body>
+
+        <div id="block1" class="block block__parallax"></div>
+        <div id="block2" class="block block__parallax"></div>
+        <div id="block3" class="block block__parallax"></div>
+        <div id="block4" class="block block__parallax"></div>
+        <div id="block5" class="block block__parallax"></div>
+
+        <div class="block"></div>
+
+        <div id="block6" class="block block__2 block__parallax"></div>
+        <div id="block7" class="block block__2 block__parallax"></div>
+        <div id="block8" class="block block__2 block__parallax"></div>
+        <div id="block9" class="block block__2 block__parallax"></div>
+        <div id="block10" class="block block__2 block__parallax"></div>
+
+        <script>
+
+            /**
+             * [description]
+             * @param  {Array}  ) {               var listeners [description]
+             * @return {[type]}   [description]
+             */
+            var events = (function() {
+
+                /**
+                 * [listeners description]
+                 * @type {Array}
+               */
+                var listeners = [];
+
+                /**
+                 * [addListener description]
+                 * @param {[type]}   name     [description]
+                 * @param {Function} callback [description]
+                 */
+                var addListener = function(name, callback) {
+
+                    listeners.push({
+                        name: name,
+                        callback: callback
+                    });
+                
+                };
+
+                /**
+                 * [emit description]
+                 * @param  {[type]} name    [description]
+                 * @param  {[type]} context [description]
+                 * @return {[type]}         [description]
+                 */
+                var emit = function(name, context) {
+
+                    if (typeof name !== 'string') {
+
+                    }
+
+                    var args = Array.prototype.splice.call(arguments, 2);
+
+                    listeners.forEach(function(listener, index, array) {
+                        for (var prop in listener) {
+                            if(listener.hasOwnProperty(prop)) {
+                                if ((prop === 'name') && (listener[prop] === name)) {
+                                    listener.callback.apply(context || this, args);
+                                }
+                            }
+                        }
+                    }.bind(this));
+                    return this;
+                };
+
+                return {
+                  addListener: addListener,
+                  emit: emit
+                }
+
+            })();
+
+            // (function(Interactions) {
+
+              /**
+               * [Scroller description]
+               * @param {[type]} ineractions [description]
+               */
+              var Scroller = function() {
+                  this.init().listen();
+              };
+
+              /**
+               * [init description]
+               * @return {[type]} [description]
+               */
+              Scroller.prototype.init = function() {
+                  this.ticking = false;
+                  this.isScroller = false;
+                  this.pos = 0;
+                  return this;
+              };
+
+              /**
+               * [listen description]
+               * @return {[type]} [description]
+               */
+              Scroller.prototype.listen = function() {
+                  var onScroll = function() {
+                      this.pos = window.scrollY;
+                      this.requestTick();
+                  };
+                  window.addEventListener('scroll', onScroll.bind(this)); 
+                  return this;
+              };
+
+              /**
+               * [requestTick description]
+               * @return {[type]} [description]
+               */
+              Scroller.prototype.requestTick = function() {
+              
+                  if (!this.ticking) {
+                    window.requestAnimationFrame(function() {
+                        events.emit('scroll', null, this.pos);
+                        this.ticking = false;
+                    }.bind(this));
+                  }
+
+                  this.ticking = true;
+              };
+
+            /**
+             * [Parallax description]
+             * @param {[type]} options [description]
+             */
+            var Parallax = function(options) {
+                this.elements = options.elements;
+                this.init().listen();
+            };
+
+            /**
+             * [init description]
+             * @return {[type]} [description]
+             */
+            Parallax.prototype.init = function() {
+                return this;
+            };
+
+            /**
+             * [listen description]
+             * @return {[type]} [description]
+             */
+            Parallax.prototype.listen = function() {
+                events.addListener('scroll', this.eachElement.bind(this));
+                //return this;
+            };
+
+            /**
+             * [onScroll description]
+             * @return {[type]} [description]
+             */
+            Parallax.prototype.onScroll = function(value) {
+                return value.element.style.top = -this.getElementValues().scrollTop * value.speed + 'px';
+            };
+
+            /**
+             * [eachElement description]
+             * @return {[type]} [description]
+             */
+            Parallax.prototype.eachElement = function() {
+                return this.elements.forEach(this.onScroll.bind(this));
+            };
+
+            /**
+             * [getElementValues description]
+             * @return {[type]} [description]
+             */
+            Parallax.prototype.getElementValues = function() {
+                return {
+                    scrollTop: window.pageYOffset
+                };
+            };
+  
+
+        var scroller = new Scroller();
+
+        var blockParallax = new Parallax({
+            elements: [
+            {
+                element: document.getElementById('block1'),
+                speed: 0.5
+            },
+            {
+                element: document.getElementById('block2'),
+                speed: 0.1
+            },
+            {
+                element: document.getElementById('block3'),
+                speed: 0.25
+            },
+            {
+                element: document.getElementById('block4'),
+                speed: 0.75
+            },
+            {
+                element: document.getElementById('block5'),
+                speed: 0.9
+            },
+            {
+                element: document.getElementById('block6'),
+                speed: 1.9
+            },
+            {
+                element: document.getElementById('block7'),
+                speed: 1.75
+            },
+            {
+                element: document.getElementById('block8'),
+                speed: 1.5
+            },
+            {
+                element: document.getElementById('block9'),
+                speed: 1.25
+            },
+            {
+                element: document.getElementById('block10'),
+                speed: 1.1
+            }             
+            ]
+        });
+
+
+
+        </script>
+
+
+    </body>
+
+</html>
