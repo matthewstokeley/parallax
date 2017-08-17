@@ -8,10 +8,10 @@ events-based parallax
 var scroller = new Scroller();
 var parallax = new Parallax({
     elements: [
-    {
-        element: document.getElementById('block1'),
-        speed: 0.5
-    }
+	    {
+	        element: document.getElementById('block1'),
+	        speed: 0.5
+	    }
     ]
 );
 ```
